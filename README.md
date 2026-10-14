@@ -1,10 +1,22 @@
-# レシピ検索システム（DBなし版）
+# レシピ検索システム（DB版：PHP + MySQL）
 
 システム開発講座2026 応用編の課題です。
 買い物中に、**カートに入れた商品**と**家にある食材**から作れるレシピを探すWebアプリです。
 
-この版はデータベースを使わず、HTML・CSS・JavaScript だけで動きます。
-マスタデータ（食材・レシピ）は `js/data.js` に JavaScript の配列として入っています。
+このリポジトリは、DBなし版（[recipe-nodb](https://github.com/imaccho/recipe-nodb)）を
+PHP + MySQL で動くように作り変えていくためのものです。
+
+**現在の状況：DB設計とSQLまで完了。画面はまだDBなし版のまま（`js/data.js` を使用）。**
+
+## データベースの準備（ローカル）
+
+1. MAMP などで MySQL を起動する
+2. phpMyAdmin の「SQL」タブで、次の順に実行する
+   1. `sql/01_create_tables.sql`（データベース `recipe_db` と9テーブルを作る）
+   2. `sql/02_insert_data.sql`（食材・レシピ・テスト用商品マスタを入れる）
+3. `sql/03_sample_queries.sql` に、スキャン・カート合計・レシピ検索のSQLの見本がある
+
+DB設計（ER図・テーブル定義）は `docs/仕様書.md` の13章を参照。
 
 ## 使い方
 
@@ -35,13 +47,10 @@ recipe-search/
 ├── js/data.js        マスタデータ（カテゴリ9件・食材50件・レシピ15件）
 ├── js/main.js        画面の処理（追加・削除・検索・画面切替）
 ├── images/           レシピ画像（r001.jpg〜r015.jpg を置く。ない時は noimage.png）
-└── docs/仕様書.md     仕様書
+├── sql/              テーブル作成・データ投入・SQL見本
+└── docs/仕様書.md     仕様書（13章がDB設計）
 ```
 
 ## 使用技術
 
-HTML / CSS / JavaScript（ライブラリ・サーバー・データベースは不使用）
-
-## 今後
-
-PHP + MySQL を使ったDB版は別のリポジトリで開発します。
+HTML / CSS / JavaScript、PHP、MySQL（utf8mb4）
