@@ -1,3 +1,5 @@
 .DS_Store
 Thumbs.db
 .vscode/
+# DB接続情報（パスワード）はアップしない
+config.php

@@ -19,9 +19,9 @@
     <!-- 左側：食材エリア -->
     <div class="food-column">
 
-      <!-- カート内食材 -->
+      <!-- カート内商品 -->
       <section class="food-area area-cart">
-        <h2>カート内食材</h2>
+        <h2>カート内商品</h2>
         <div class="input-row">
           <select id="cartSelect"></select>
           <button id="cartAddBtn" type="button">追加</button>
@@ -88,19 +88,15 @@
       <div class="detail-info">
         <p>調理時間：<span id="detailTime"></span></p>
         <p>一致：<span id="detailMatch"></span></p>
+        <p id="detailDescription" class="description"></p>
       </div>
     </div>
 
     <h3>材料<span id="detailServings"></span></h3>
     <ul id="detailFoods" class="detail-foods"></ul>
-    <p id="detailSeasonings" class="seasonings"></p>
-
-    <h3>作り方</h3>
-    <ol id="detailSteps" class="detail-steps"></ol>
   </section>
 
-  <!-- data.js（データ）を先に、main.js（処理）を後に読み込む -->
-  <script src="js/data.js"></script>
+  <!-- データは api フォルダのPHPからデータベースを読んで受け取る -->
   <script src="js/main.js"></script>
 </body>
 </html>

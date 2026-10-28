@@ -1,298 +1,247 @@
 // ==========================================================
-// main.js：画面の処理
-//   食材の追加・削除、レシピ検索、画面の切り替えを行う
+// main.js：画面の処理（DB版）
+//   データは api フォルダのPHPから受け取る（fetch）
+//     api/get_products.php   … カート内商品のドロップダウン用
+//     api/get_foods.php      … カート外食材・対象外食材のドロップダウン用
+//     api/search_recipes.php … レシピ検索
+//     api/get_recipe.php     … レシピ詳細
 // ==========================================================
 
-// ---------- 選択食材（トランザクション） ----------
-//   食材IDを入れる配列。画面を開いている間だけ保持する
-const cartFoods = [];     // カート内食材
-const homeFoods = [];     // カート外食材（家にある食材）
-const excludeFoods = [];  // 対象外食材
+// ---------- PHPから受け取ったマスタ ----------
+let products = [];   // [{ mpr_code, mpr_name, mpr_unit_price }, ...]
+let foods = [];      // [{ recipe_food_id, food_name }, ...]
 
-const NO_IMAGE = "images/noimage.png";  // 画像がない時に表示する画像
+// ---------- 画面で選んだもの（ブラウザ側で持つ） ----------
+const cartProducts = [];  // カート内商品（商品コード M001 など）
+const homeFoods = [];     // カート外食材（レシピ材料ID F001 など）
+const excludeFoods = [];  // 対象外食材（レシピ材料ID）
 
-// ページの読み込みが終わったら init() を実行する
+// ---------- 最後の検索結果（詳細画面の○×と一致数に使う） ----------
+let lastTargets = [];     // 検索対象食材
+let lastResults = [];     // 検索結果のレシピ一覧
+
+const NO_IMAGE = "image_paths/noimage.png";  // 画像がない時に表示する画像
+
 window.addEventListener("DOMContentLoaded", init);
 
 
 // ==========================================================
-// init：画面を開いた時の準備（E-01）
+// init：画面を開いた時の準備
 // ==========================================================
-function init() {
-  // 3つのドロップダウンに食材マスタの選択肢を作る
-  createOptions(document.getElementById("cartSelect"));
-  createOptions(document.getElementById("homeSelect"));
-  createOptions(document.getElementById("excludeSelect"));
-
-  // 追加ボタン（E-02）
+async function init() {
+  // 追加ボタン
   document.getElementById("cartAddBtn").addEventListener("click", function () {
-    addFood(cartFoods, document.getElementById("cartSelect"), document.getElementById("cartList"));
+    addItem(cartProducts, "cartSelect", "cartList", getProductName);
   });
   document.getElementById("homeAddBtn").addEventListener("click", function () {
-    addFood(homeFoods, document.getElementById("homeSelect"), document.getElementById("homeList"));
+    addItem(homeFoods, "homeSelect", "homeList", getFoodName);
   });
   document.getElementById("excludeAddBtn").addEventListener("click", function () {
-    addFood(excludeFoods, document.getElementById("excludeSelect"), document.getElementById("excludeList"));
+    addItem(excludeFoods, "excludeSelect", "excludeList", getFoodName);
   });
 
-  // レシピを探すボタン（E-04）
   document.getElementById("searchBtn").addEventListener("click", searchRecipes);
-
-  // 戻るボタン（E-06）
   document.getElementById("backBtn").addEventListener("click", showMain);
+
+  // データベースから商品と食材を読み込む
+  setButtonsEnabled(false);
+  showMessage("データを読み込んでいます…");
+  try {
+    const productData = await fetchJson("api/get_products.php");
+    const foodData = await fetchJson("api/get_foods.php");
+    products = productData.products;
+    foods = foodData.foods;
+
+    createOptions(document.getElementById("cartSelect"), products, "mpr_code", "mpr_name");
+    createOptions(document.getElementById("homeSelect"), foods, "recipe_food_id", "food_name");
+    createOptions(document.getElementById("excludeSelect"), foods, "recipe_food_id", "food_name");
+
+    setButtonsEnabled(true);
+    showMessage("商品・食材を追加して「レシピを探す」を押してください。");
+  } catch (error) {
+    showMessage("データベースに接続できません。（" + error.message + "）");
+  }
 }
 
 
 // ==========================================================
-// createOptions：食材マスタからドロップダウンの選択肢を作る
-//   カテゴリごとに <optgroup> でまとめる
+// fetchJson：PHPを呼び出して、JSONを受け取る
+//   options を渡すと POST などにできる
+//   エラーの時は throw する（呼び出し側の catch に進む）
 // ==========================================================
-function createOptions(selectElement) {
-  // 先頭の「選択してください」
+async function fetchJson(url, options) {
+  const response = await fetch(url, options);
+
+  let data;
+  try {
+    data = await response.json();
+  } catch (e) {
+    // PHPのエラー画面など、JSONでないものが返ってきた時
+    throw new Error("サーバーから正しい応答がありません");
+  }
+
+  if (!data.ok) {
+    throw new Error(data.error || "エラーが発生しました");
+  }
+  return data;
+}
+
+
+// ==========================================================
+// createOptions：ドロップダウンの選択肢を作る
+//   items     ：配列（products または foods）
+//   valueKey  ：option の値にする項目名
+//   textKey   ：表示する項目名
+// ==========================================================
+function createOptions(selectElement, items, valueKey, textKey) {
+  selectElement.innerHTML = "";
+
   const first = document.createElement("option");
   first.value = "";
   first.textContent = "選択してください";
   selectElement.appendChild(first);
 
-  // カテゴリごとにグループを作る
-  categories.forEach(function (category) {
-    const group = document.createElement("optgroup");
-    group.label = category.categoryName;
-
-    // このカテゴリの食材だけを追加する
-    foods.forEach(function (food) {
-      if (food.categoryId === category.categoryId) {
-        const option = document.createElement("option");
-        option.value = food.foodId;
-        option.textContent = food.foodName;
-        group.appendChild(option);
-      }
-    });
-
-    selectElement.appendChild(group);
+  items.forEach(function (item) {
+    const option = document.createElement("option");
+    option.value = item[valueKey];
+    option.textContent = item[textKey];
+    selectElement.appendChild(option);
   });
 }
 
 
 // ==========================================================
-// addFood：選んだ食材を一覧に追加する（E-02）
-//   list          ：追加先の配列（cartFoods など）
-//   selectElement ：ドロップダウン
-//   ulElement     ：表示する一覧
+// addItem：選んだ商品・食材を一覧に追加する
+//   list     ：追加先の配列
+//   selectId ：ドロップダウンのid
+//   ulId     ：一覧のid
+//   getName  ：コードから名前を取り出す関数（getProductName / getFoodName）
 // ==========================================================
-function addFood(list, selectElement, ulElement) {
-  const foodId = selectElement.value;
+function addItem(list, selectId, ulId, getName) {
+  const selectElement = document.getElementById(selectId);
+  const code = selectElement.value;
 
-  // ① 未選択チェック
-  if (foodId === "") {
-    showMessage("食材を選択してください。");                          // M-01
+  if (code === "") {
+    showMessage("商品・食材を選択してください。");
+    return;
+  }
+  if (list.includes(code)) {
+    showMessage("「" + getName(code) + "」は既に追加されています。");
     return;
   }
 
-  // ② 重複チェック（同じ一覧に既にあるか）
-  if (list.includes(foodId)) {
-    showMessage("「" + getFoodName(foodId) + "」は既に追加されています。"); // M-02
-    return;
-  }
-
-  // ③ 配列に追加して一覧を表示し直す
-  list.push(foodId);
-  renderFoodList(list, ulElement);
-
-  // ④ ドロップダウンを「選択してください」に戻す
+  list.push(code);
+  renderList(list, ulId, getName);
   selectElement.value = "";
-
-  // ⑤ 条件が変わったのでレシピ一覧をクリアする
   clearRecipeList();
 }
 
 
 // ==========================================================
-// removeFood：確認メッセージを出して一覧から削除する（E-03）
+// removeItem：確認メッセージを出して一覧から削除する
 // ==========================================================
-function removeFood(list, foodId, ulElement) {
-  const ok = confirm("「" + getFoodName(foodId) + "」を一覧から削除しますか？"); // M-03
+function removeItem(list, code, ulId, getName) {
+  const ok = confirm("「" + getName(code) + "」を一覧から削除しますか？");
   if (!ok) {
-    return;  // キャンセルの時は何もしない
+    return;
   }
-
-  // 配列の中の位置を探して1件削除する
-  const index = list.indexOf(foodId);
-  list.splice(index, 1);
-
-  renderFoodList(list, ulElement);
+  list.splice(list.indexOf(code), 1);
+  renderList(list, ulId, getName);
   clearRecipeList();
 }
 
 
 // ==========================================================
-// renderFoodList：配列の内容を一覧（<ul>）に表示する
+// renderList：配列の内容を一覧（<ul>）に表示する
 // ==========================================================
-function renderFoodList(list, ulElement) {
-  ulElement.innerHTML = "";  // 一度空にする
+function renderList(list, ulId, getName) {
+  const ul = document.getElementById(ulId);
+  ul.innerHTML = "";
 
-  list.forEach(function (foodId) {
+  list.forEach(function (code) {
     const li = document.createElement("li");
-    li.textContent = getFoodName(foodId);
+    li.textContent = getName(code);
     li.title = "ダブルクリックで削除";
-
-    // ダブルクリックで削除
     li.addEventListener("dblclick", function () {
-      removeFood(list, foodId, ulElement);
+      removeItem(list, code, ulId, getName);
     });
-
-    ulElement.appendChild(li);
+    ul.appendChild(li);
   });
 }
 
 
 // ==========================================================
-// getTargetFoods：検索対象食材を作る
-//   カート内食材 ＋ カート外食材（同じ食材は1つにする）
+// searchRecipes：PHPにレシピ検索をお願いして、一覧に表示する
 // ==========================================================
-function getTargetFoods() {
-  const target = [];
-
-  const all = cartFoods.concat(homeFoods);
-  all.forEach(function (foodId) {
-    if (!target.includes(foodId)) {
-      target.push(foodId);
-    }
-  });
-
-  return target;
-}
-
-
-// ==========================================================
-// hasExcludeFood：レシピの材料に対象外食材が含まれているか調べる
-//   含まれていれば true、含まれていなければ false を返す
-// ==========================================================
-function hasExcludeFood(recipeId) {
-  const materials = getRecipeFoods(recipeId);
-
-  // some：1つでも条件に当てはまれば true になる
-  return materials.some(function (item) {
-    return excludeFoods.includes(item.foodId);
-  });
-}
-
-
-// ==========================================================
-// getRecipeFoods：レシピの材料一覧を取り出す
-// ==========================================================
-function getRecipeFoods(recipeId) {
-  return recipeFoods.filter(function (item) {
-    return item.recipeId === recipeId;
-  });
-}
-
-
-// ==========================================================
-// searchRecipes：レシピを検索して一覧に表示する（E-04）
-// ==========================================================
-function searchRecipes() {
-  const target = getTargetFoods();
-
-  // 検索条件チェック（F-10）
-  if (target.length === 0) {
+async function searchRecipes() {
+  if (cartProducts.length === 0 && homeFoods.length === 0) {
     clearTable();
-    showMessage("検索対象の食材がありません。食材を追加してください。");  // M-04
+    showMessage("検索対象の食材がありません。商品・食材を追加してください。");
     return;
   }
 
-  // レシピごとに一致数を数える（F-11）
-  const results = [];
-  recipes.forEach(function (recipe) {
-    // 対象外食材を含むレシピは表示しないので、ここで飛ばす
-    if (hasExcludeFood(recipe.recipeId)) {
-      return;  // forEach の中の return は「次のレシピへ進む」の意味
-    }
-
-    const materials = getRecipeFoods(recipe.recipeId);
-    let matchCount = 0;
-
-    materials.forEach(function (item) {
-      if (target.includes(item.foodId)) {
-        matchCount++;
-      }
+  setButtonsEnabled(false);
+  showMessage("検索しています…");
+  try {
+    const data = await fetchJson("api/search_recipes.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cart: cartProducts, home: homeFoods, exclude: excludeFoods })
     });
 
-    // 一致数が1以上のレシピだけ残す
-    if (matchCount >= 1) {
-      results.push({
-        recipe: recipe,
-        total: materials.length,   // 材料数
-        match: matchCount          // 一致数
-      });
-    }
-  });
+    lastTargets = data.targets;
+    lastResults = data.recipes;
 
-  // 検索結果なし（F-13）
-  if (results.length === 0) {
+    if (lastTargets.length === 0) {
+      // カートの商品がどの食材にも紐付いていない時
+      clearTable();
+      showMessage("レシピに使える食材がありません。カート外食材も追加してみてください。");
+    } else if (lastResults.length === 0) {
+      clearTable();
+      showMessage("条件に合うレシピがありません。");
+    } else {
+      renderRecipeList(lastResults);
+      showMessage(lastResults.length + "件のレシピが見つかりました。ダブルクリックで詳細を表示します。");
+    }
+  } catch (error) {
     clearTable();
-    showMessage("条件に合うレシピがありません。");  // M-05
-    return;
+    showMessage("検索できませんでした。（" + error.message + "）");
   }
-
-  // 並び替え（F-12）
-  results.sort(function (a, b) {
-    // ① 一致数の多い順
-    if (a.match !== b.match) {
-      return b.match - a.match;
-    }
-    // ② 不足食材数の少ない順
-    const lackA = a.total - a.match;
-    const lackB = b.total - b.match;
-    if (lackA !== lackB) {
-      return lackA - lackB;
-    }
-    // ③ レシピIDの小さい順
-    return a.recipe.recipeId < b.recipe.recipeId ? -1 : 1;
-  });
-
-  renderRecipeList(results);
-  showMessage(results.length + "件のレシピが見つかりました。ダブルクリックで詳細を表示します。");
+  setButtonsEnabled(true);
 }
 
 
 // ==========================================================
-// renderRecipeList：レシピ一覧の表を作る（F-14）
+// renderRecipeList：レシピ一覧の表を作る
 // ==========================================================
 function renderRecipeList(results) {
   const tbody = document.getElementById("recipeBody");
   tbody.innerHTML = "";
 
-  results.forEach(function (result, i) {
+  results.forEach(function (recipe, i) {
     const tr = document.createElement("tr");
 
-    // No.
     const tdNo = document.createElement("td");
     tdNo.className = "col-no";
     tdNo.textContent = i + 1;
 
-    // 画像
     const tdImg = document.createElement("td");
-    const img = createImage(result.recipe, "list-image");
-    tdImg.appendChild(img);
+    tdImg.appendChild(createImage(recipe.image_path, recipe.recipe_name, "list-image"));
 
-    // レシピ名
     const tdName = document.createElement("td");
-    tdName.textContent = result.recipe.recipeName;
+    tdName.textContent = recipe.recipe_name;
 
-    // 一致状況
     const tdMatch = document.createElement("td");
     tdMatch.className = "col-match";
-    tdMatch.textContent = result.total + "食材中" + result.match + "食材";
+    tdMatch.textContent = recipe.total_count + "食材中" + recipe.match_count + "食材";
 
     tr.appendChild(tdNo);
     tr.appendChild(tdImg);
     tr.appendChild(tdName);
     tr.appendChild(tdMatch);
 
-    // ダブルクリックで詳細画面へ（E-05）
     tr.addEventListener("dblclick", function () {
-      showDetail(result.recipe.recipeId);
+      showDetail(recipe.recipe_id);
     });
 
     tbody.appendChild(tr);
@@ -301,26 +250,33 @@ function renderRecipeList(results) {
 
 
 // ==========================================================
-// showDetail：レシピ詳細画面を表示する（F-15〜F-17）
+// showDetail：PHPからレシピ詳細を受け取って、詳細画面を表示する
 // ==========================================================
-function showDetail(recipeId) {
-  const recipe = recipes.find(function (r) {
-    return r.recipeId === recipeId;
-  });
-  const materials = getRecipeFoods(recipeId);
-  const target = getTargetFoods();
+async function showDetail(recipeId) {
+  let data;
+  try {
+    data = await fetchJson("api/get_recipe.php?id=" + encodeURIComponent(recipeId));
+  } catch (error) {
+    showMessage("レシピの詳細を表示できませんでした。（" + error.message + "）");
+    return;
+  }
 
-  // レシピ名・画像・調理時間
-  document.getElementById("detailName").textContent = recipe.recipeName;
+  const recipe = data.recipe;
+  const materials = data.materials;
+
+  document.getElementById("detailName").textContent = recipe.recipe_name;
+
   const img = document.getElementById("detailImage");
   img.onerror = function () {
     img.onerror = null;
     img.src = NO_IMAGE;
   };
-  img.src = recipe.image;
-  img.alt = recipe.recipeName;
-  document.getElementById("detailTime").textContent = recipe.cookTime + "分";
-  document.getElementById("detailServings").textContent = "（" + recipe.servings + "人分）";
+  img.src = recipe.image_path || NO_IMAGE;
+  img.alt = recipe.recipe_name;
+
+  document.getElementById("detailTime").textContent = recipe.cook_time ? recipe.cook_time + "分" : "−";
+  document.getElementById("detailServings").textContent = recipe.servings ? "（" + recipe.servings + "人分）" : "";
+  document.getElementById("detailDescription").textContent = recipe.description || "";
 
   // 材料（ある食材は○、ない食材は×で赤字）
   const ul = document.getElementById("detailFoods");
@@ -328,11 +284,12 @@ function showDetail(recipeId) {
   let matchCount = 0;
 
   materials.forEach(function (item) {
-    const li = document.createElement("li");
-    const have = target.includes(item.foodId);
+    const have = lastTargets.includes(item.recipe_food_id);
     if (have) {
       matchCount++;
     }
+
+    const li = document.createElement("li");
     li.className = have ? "have" : "lack";
 
     const mark = document.createElement("span");
@@ -341,10 +298,10 @@ function showDetail(recipeId) {
 
     const name = document.createElement("span");
     name.className = "food-name";
-    name.textContent = getFoodName(item.foodId) + (have ? "" : "（不足）");
+    name.textContent = item.food_name + (have ? "" : "（不足）");
 
     const amount = document.createElement("span");
-    amount.textContent = item.amount;
+    amount.textContent = item.amount || "";
 
     li.appendChild(mark);
     li.appendChild(name);
@@ -355,20 +312,6 @@ function showDetail(recipeId) {
   document.getElementById("detailMatch").textContent =
     materials.length + "食材中" + matchCount + "食材";
 
-  // その他の調味料
-  document.getElementById("detailSeasonings").textContent =
-    "（その他：" + recipe.seasonings + "）";
-
-  // 作り方
-  const ol = document.getElementById("detailSteps");
-  ol.innerHTML = "";
-  recipe.steps.forEach(function (step) {
-    const li = document.createElement("li");
-    li.textContent = step;
-    ol.appendChild(li);
-  });
-
-  // 画面を切り替える
   document.getElementById("mainScreen").classList.add("hidden");
   document.getElementById("detailScreen").classList.remove("hidden");
   window.scrollTo(0, 0);
@@ -376,7 +319,7 @@ function showDetail(recipeId) {
 
 
 // ==========================================================
-// showMain：メイン画面に戻る（E-06）
+// showMain：メイン画面に戻る
 // ==========================================================
 function showMain() {
   document.getElementById("detailScreen").classList.add("hidden");
@@ -389,39 +332,51 @@ function showMain() {
 // 共通で使う小さな関数
 // ==========================================================
 
-// 食材IDから食材名を取り出す
-function getFoodName(foodId) {
-  const food = foods.find(function (f) {
-    return f.foodId === foodId;
+// 商品コードから商品名を取り出す
+function getProductName(code) {
+  const product = products.find(function (p) {
+    return p.mpr_code === code;
   });
-  return food ? food.foodName : "";
+  return product ? product.mpr_name : code;
+}
+
+// レシピ材料IDから食材名を取り出す
+function getFoodName(id) {
+  const food = foods.find(function (f) {
+    return f.recipe_food_id === id;
+  });
+  return food ? food.food_name : id;
 }
 
 // レシピ画像の <img> を作る（画像がない時は noimage.png）
-function createImage(recipe, className) {
+function createImage(path, alt, className) {
   const img = document.createElement("img");
   img.className = className;
-  img.alt = recipe.recipeName;
+  img.alt = alt;
   img.onerror = function () {
-    img.onerror = null;     // noimage.png もない時に無限に繰り返さないため
+    img.onerror = null;
     img.src = NO_IMAGE;
   };
-  img.src = recipe.image;
+  img.src = path || NO_IMAGE;
   return img;
 }
 
-// メッセージ欄に表示する
+// ボタンを押せる／押せないを切り替える（読み込み中に連打されないように）
+function setButtonsEnabled(enabled) {
+  ["cartAddBtn", "homeAddBtn", "excludeAddBtn", "searchBtn"].forEach(function (id) {
+    document.getElementById(id).disabled = !enabled;
+  });
+}
+
 function showMessage(text) {
   document.getElementById("message").textContent = text;
 }
 
-// レシピ一覧の表を空にする
 function clearTable() {
   document.getElementById("recipeBody").innerHTML = "";
 }
 
-// 食材が変わった時にレシピ一覧をクリアする
 function clearRecipeList() {
   clearTable();
-  showMessage("食材が変更されました。「レシピを探す」を押してください。");  // M-06
+  showMessage("商品・食材が変更されました。「レシピを探す」を押してください。");
 }
