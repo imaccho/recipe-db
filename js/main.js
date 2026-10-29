@@ -109,7 +109,7 @@ function createOptions(selectElement, items, valueKey, textKey) {
   items.forEach(function (item) {
     const option = document.createElement("option");
     option.value = item[valueKey];
-    option.textContent = item[textKey];
+    option.textContent = item[textKey] || item[valueKey];   // 名前が空の時はコードを表示
     selectElement.appendChild(option);
   });
 }
@@ -342,7 +342,7 @@ function getProductName(code) {
   const product = products.find(function (p) {
     return p.mpr_code === code;
   });
-  return product ? product.mpr_name : code;
+  return product && product.mpr_name ? product.mpr_name : code;
 }
 
 // レシピ材料IDから食材名を取り出す
@@ -350,7 +350,7 @@ function getFoodName(id) {
   const food = foods.find(function (f) {
     return f.recipe_food_id === id;
   });
-  return food ? food.food_name : id;
+  return food && food.food_name ? food.food_name : id;
 }
 
 // レシピ画像の <img> を作る（画像がない時は noimage.png）
