@@ -81,7 +81,12 @@ async function fetchJson(url, options) {
   }
 
   if (!data.ok) {
-    throw new Error(data.error || "エラーが発生しました");
+    let message = data.error || "エラーが発生しました";
+    // config.php の DEBUG が true の時だけ、PHPが詳しい原因（detail）を返してくる
+    if (data.detail) {
+      message += "／詳細：" + data.detail;
+    }
+    throw new Error(message);
   }
   return data;
 }
