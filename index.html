@@ -26,8 +26,12 @@
           <select id="cartSelect"></select>
           <button id="cartAddBtn" type="button">追加</button>
         </div>
-        <ul id="cartList" class="food-list"></ul>
-        <p class="hint">※ダブルクリックで削除</p>
+        <ul id="cartList" class="food-list cart-list"></ul>
+        <div class="cart-total">
+          <span>合計 <span id="cartCount">0</span>点</span>
+          <span id="cartTotal" class="cart-total-amount">0円</span>
+        </div>
+        <p class="hint">※同じ商品を追加すると数量が増えます。ダブルクリックで削除</p>
       </section>
 
       <div class="food-row">

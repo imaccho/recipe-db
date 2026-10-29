@@ -12,7 +12,7 @@ let products = [];   // [{ mpr_code, mpr_name, mpr_unit_price }, ...]
 let foods = [];      // [{ recipe_food_id, food_name }, ...]
 
 // ---------- 画面で選んだもの（ブラウザ側で持つ） ----------
-const cartProducts = [];  // カート内商品（商品コード M001 など）
+const cartItems = [];     // カート内商品 [{ code: "M001", name: "キャベツ1玉", price: 300, quantity: 2 }, ...]
 const homeFoods = [];     // カート外食材（レシピ材料ID F001 など）
 const excludeFoods = [];  // 対象外食材（レシピ材料ID）
 
@@ -31,7 +31,7 @@ window.addEventListener("DOMContentLoaded", init);
 async function init() {
   // 追加ボタン
   document.getElementById("cartAddBtn").addEventListener("click", function () {
-    addItem(cartProducts, "cartSelect", "cartList", getProductName);
+    addCartItem();
   });
   document.getElementById("homeAddBtn").addEventListener("click", function () {
     addItem(homeFoods, "homeSelect", "homeList", getFoodName);
@@ -52,7 +52,9 @@ async function init() {
     products = productData.products;
     foods = foodData.foods;
 
-    createOptions(document.getElementById("cartSelect"), products, "mpr_code", "mpr_name");
+    createOptions(document.getElementById("cartSelect"), products, "mpr_code", "mpr_name", function (p) {
+      return p.mpr_name + "（" + formatYen(p.mpr_unit_price) + "）";   // 例：キャベツ1玉（300円）
+    });
     createOptions(document.getElementById("homeSelect"), foods, "recipe_food_id", "food_name");
     createOptions(document.getElementById("excludeSelect"), foods, "recipe_food_id", "food_name");
 
@@ -97,8 +99,9 @@ async function fetchJson(url, options) {
 //   items     ：配列（products または foods）
 //   valueKey  ：option の値にする項目名
 //   textKey   ：表示する項目名
+//   makeLabel ：（省略可）表示する文字を作る関数。指定した時は textKey より優先
 // ==========================================================
-function createOptions(selectElement, items, valueKey, textKey) {
+function createOptions(selectElement, items, valueKey, textKey, makeLabel) {
   selectElement.innerHTML = "";
 
   const first = document.createElement("option");
@@ -109,7 +112,11 @@ function createOptions(selectElement, items, valueKey, textKey) {
   items.forEach(function (item) {
     const option = document.createElement("option");
     option.value = item[valueKey];
-    option.textContent = item[textKey] || item[valueKey];   // 名前が空の時はコードを表示
+    if (makeLabel) {
+      option.textContent = makeLabel(item);
+    } else {
+      option.textContent = item[textKey] || item[valueKey];   // 名前が空の時はコードを表示
+    }
     selectElement.appendChild(option);
   });
 }
@@ -176,10 +183,118 @@ function renderList(list, ulId, getName) {
 
 
 // ==========================================================
+// addCartItem：選んだ商品をカートに追加する
+//   ・まだカートにない商品 → 数量1で追加（単価は追加した時点の値）
+//   ・すでにカートにある商品 → 数量を +1 する
+// ==========================================================
+function addCartItem() {
+  const selectElement = document.getElementById("cartSelect");
+  const code = selectElement.value;
+
+  if (code === "") {
+    showMessage("商品を選択してください。");
+    return;
+  }
+
+  const item = cartItems.find(function (c) {
+    return c.code === code;
+  });
+
+  if (item) {
+    item.quantity++;
+  } else {
+    const product = products.find(function (p) {
+      return p.mpr_code === code;
+    });
+    cartItems.push({
+      code: code,
+      name: getProductName(code),
+      price: Number(product ? product.mpr_unit_price : 0),
+      quantity: 1
+    });
+  }
+
+  renderCart();
+  selectElement.value = "";
+  clearRecipeList();
+}
+
+
+// ==========================================================
+// removeCartItem：確認メッセージを出して、カートから1行削除する
+// ==========================================================
+function removeCartItem(code) {
+  const index = cartItems.findIndex(function (c) {
+    return c.code === code;
+  });
+  const item = cartItems[index];
+
+  const ok = confirm("「" + item.name + "」（数量" + item.quantity + "）をカートから削除しますか？");
+  if (!ok) {
+    return;
+  }
+  cartItems.splice(index, 1);
+  renderCart();
+  clearRecipeList();
+}
+
+
+// ==========================================================
+// renderCart：カート内商品の一覧と合計を表示する
+//   1行：商品名 ／ 単価 × 数量 ／ 金額（単価 × 数量）
+//   合計：点数（数量の合計）と合計金額（金額の合計）※単価は税込
+// ==========================================================
+function renderCart() {
+  const ul = document.getElementById("cartList");
+  ul.innerHTML = "";
+
+  let totalCount = 0;
+  let totalAmount = 0;
+
+  cartItems.forEach(function (item) {
+    const amount = item.price * item.quantity;
+    totalCount += item.quantity;
+    totalAmount += amount;
+
+    const li = document.createElement("li");
+    li.title = "ダブルクリックで削除";
+
+    const name = document.createElement("span");
+    name.className = "cart-name";
+    name.textContent = item.name;
+
+    const detail = document.createElement("span");
+    detail.className = "cart-detail";
+    detail.textContent = formatYen(item.price) + " × " + item.quantity;
+
+    const amountSpan = document.createElement("span");
+    amountSpan.className = "cart-amount";
+    amountSpan.textContent = formatYen(amount);
+
+    li.appendChild(name);
+    li.appendChild(detail);
+    li.appendChild(amountSpan);
+
+    li.addEventListener("dblclick", function () {
+      removeCartItem(item.code);
+    });
+    ul.appendChild(li);
+  });
+
+  document.getElementById("cartCount").textContent = totalCount;
+  document.getElementById("cartTotal").textContent = formatYen(totalAmount);
+}
+
+
+// ==========================================================
 // searchRecipes：PHPにレシピ検索をお願いして、一覧に表示する
 // ==========================================================
 async function searchRecipes() {
-  if (cartProducts.length === 0 && homeFoods.length === 0) {
+  const cartCodes = cartItems.map(function (item) {
+    return item.code;
+  });
+
+  if (cartCodes.length === 0 && homeFoods.length === 0) {
     clearTable();
     showMessage("検索対象の食材がありません。商品・食材を追加してください。");
     return;
@@ -191,7 +306,7 @@ async function searchRecipes() {
     const data = await fetchJson("api/search_recipes.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cart: cartProducts, home: homeFoods, exclude: excludeFoods })
+      body: JSON.stringify({ cart: cartCodes, home: homeFoods, exclude: excludeFoods })
     });
 
     lastTargets = data.targets;
@@ -368,6 +483,11 @@ function setButtonsEnabled(enabled) {
   ["cartAddBtn", "homeAddBtn", "excludeAddBtn", "searchBtn"].forEach(function (id) {
     document.getElementById(id).disabled = !enabled;
   });
+}
+
+// 金額を「1,234円」の形にする
+function formatYen(value) {
+  return Number(value).toLocaleString("ja-JP") + "円";
 }
 
 function showMessage(text) {
