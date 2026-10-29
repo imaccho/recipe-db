@@ -17,10 +17,10 @@ USE recipe_test;
 DROP TABLE IF EXISTS foods;
 DROP TABLE IF EXISTS materials;
 DROP TABLE IF EXISTS recipes;
-DROP TABLE IF EXISTS ms_products;
+DROP TABLE IF EXISTS ms_product;
 
 -- 商品マスタ
-CREATE TABLE ms_products (
+CREATE TABLE ms_product (
   mpr_code            VARCHAR(20)  NOT NULL COMMENT '商品コード',
   mpr_barcode         VARCHAR(20)  NULL     COMMENT 'バーコード',
   mpr_name            VARCHAR(100) NOT NULL COMMENT '商品名',
@@ -65,5 +65,5 @@ CREATE TABLE foods (
   recipe_food_id  VARCHAR(10)  NOT NULL COMMENT 'レシピ材料ID（F001など）',
   PRIMARY KEY (food_id),
   KEY idx_foods_food (recipe_food_id),
-  CONSTRAINT fk_foods_product FOREIGN KEY (mpr_code) REFERENCES ms_products (mpr_code)
+  CONSTRAINT fk_foods_product FOREIGN KEY (mpr_code) REFERENCES ms_product (mpr_code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

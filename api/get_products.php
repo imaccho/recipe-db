@@ -12,7 +12,7 @@ try {
     $pdo = getDb();
 
     $sql = 'SELECT mpr_code, mpr_name, mpr_unit_price
-            FROM ms_products
+            FROM ms_product
             WHERE mpr_sales_end_flag IS NULL OR mpr_sales_end_flag = 0
             ORDER BY mpr_code';
     $products = $pdo->query($sql)->fetchAll();

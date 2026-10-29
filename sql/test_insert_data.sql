@@ -9,7 +9,7 @@ SET NAMES utf8mb4;
 USE recipe_test;
 
 -- 商品マスタ（65件）
-INSERT INTO ms_products (mpr_code, mpr_name, mpr_unit_price) VALUES
+INSERT INTO ms_product (mpr_code, mpr_name, mpr_unit_price) VALUES
   ('M001', 'キャベツ1玉', 300),
   ('M002', 'キャベツ半切り', 200),
   ('M003', '玉ねぎ1袋', 300),
