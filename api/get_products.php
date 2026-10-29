@@ -1,7 +1,7 @@
 <?php
 // ==========================================================
 // get_products.php：カート内商品のドロップダウン用の商品一覧
-//   販売終了日（mpr_sales_end_flag：DATE型）を過ぎた商品は除く
+//   販売終了日（mpr_sales_end_date：DATE型）を過ぎた商品は除く
 //   ・販売終了日が空（NULL）→ 販売中
 //   ・販売終了日が今日以降 → 販売中（終了日の当日までは選べる）
 //
@@ -15,8 +15,8 @@ try {
 
     $sql = 'SELECT mpr_code, mpr_name, mpr_unit_price
             FROM ms_product
-            WHERE mpr_sales_end_flag IS NULL
-               OR mpr_sales_end_flag >= CURDATE()
+            WHERE mpr_sales_end_date IS NULL
+               OR mpr_sales_end_date >= CURDATE()
             ORDER BY mpr_code';
     $products = $pdo->query($sql)->fetchAll();
 
