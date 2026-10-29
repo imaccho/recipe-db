@@ -29,7 +29,7 @@ CREATE TABLE ms_product (
   mpr_unit_price      INT          NOT NULL COMMENT '販売単価（税込）',
   mpr__tax_type       CHAR(1)      NULL     COMMENT '税区分',
   mpr_category        VARCHAR(20)  NULL     COMMENT '商品分類',
-  mpr_sales_end_flag  BOOLEAN      NULL     COMMENT '販売終了',
+  mpr_sales_end_flag  DATE         NULL     COMMENT '販売終了日（NULLは販売中）',
   mpr_created_at      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '登録日時',
   mpr_updated_at      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新日時',
   PRIMARY KEY (mpr_code)
