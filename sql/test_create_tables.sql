@@ -39,10 +39,7 @@ CREATE TABLE ms_product (
 CREATE TABLE recipes (
   recipe_id    VARCHAR(10)  NOT NULL COMMENT 'レシピID',
   recipe_name  VARCHAR(100) NOT NULL COMMENT 'レシピ名',
-  description  VARCHAR(255) NULL     COMMENT '紹介文',
   image_path   VARCHAR(255) NULL     COMMENT '画像の保存場所',
-  cook_time    INT          NULL     COMMENT '料理時間（分）',
-  servings     INT          NULL     COMMENT '分量（人数）',
   PRIMARY KEY (recipe_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

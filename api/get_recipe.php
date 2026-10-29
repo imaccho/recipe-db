@@ -5,8 +5,7 @@
 //   受け取る形（GET）：get_recipe.php?id=R001
 //   返す形：
 //     { "ok": true,
-//       "recipe": { "recipe_id": "R001", "recipe_name": "肉じゃが", "description": null,
-//                   "image_path": "image_paths/r001.jpg", "cook_time": 30, "servings": 2 },
+//       "recipe": { "recipe_id": "R001", "recipe_name": "肉じゃが", "image_path": "image_paths/r001.jpg" },
 //       "materials": [ { "recipe_food_id": "F025", "food_name": "牛こま肉", "amount": "150g" }, ... ] }
 // ==========================================================
 
@@ -21,7 +20,7 @@ try {
     $pdo = getDb();
 
     // レシピ本体
-    $stmt = $pdo->prepare('SELECT recipe_id, recipe_name, description, image_path, cook_time, servings
+    $stmt = $pdo->prepare('SELECT recipe_id, recipe_name, image_path
                            FROM recipes
                            WHERE recipe_id = ?');
     $stmt->execute([$id]);

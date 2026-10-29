@@ -77,22 +77,22 @@ INSERT INTO ms_product (mpr_code, mpr_name, mpr_unit_price) VALUES
   ('M065', 'マヨネーズ', 300);
 
 -- レシピ（15件）画像の保存場所は設計書のデータどおり image_paths/ にする
-INSERT INTO recipes (recipe_id, recipe_name, description, image_path, cook_time, servings) VALUES
-  ('R001', '肉じゃが', NULL, 'image_paths/r001.jpg', 30, 2),
-  ('R002', 'カレーライス', NULL, 'image_paths/r002.jpg', 40, 4),
-  ('R003', '野菜炒め', NULL, 'image_paths/r003.jpg', 15, 2),
-  ('R004', '親子丼', NULL, 'image_paths/r004.jpg', 20, 2),
-  ('R005', '麻婆なす', NULL, 'image_paths/r005.jpg', 20, 2),
-  ('R006', 'ハンバーグ', NULL, 'image_paths/r006.jpg', 30, 2),
-  ('R007', '豚汁', NULL, 'image_paths/r007.jpg', 25, 4),
-  ('R008', 'ナポリタン', NULL, 'image_paths/r008.jpg', 20, 2),
-  ('R009', '鮭のホイル焼き', NULL, 'image_paths/r009.jpg', 20, 2),
-  ('R010', 'オムライス', NULL, 'image_paths/r010.jpg', 25, 2),
-  ('R011', 'ポテトサラダ', NULL, 'image_paths/r011.jpg', 25, 3),
-  ('R012', 'ほうれん草とベーコンのソテー', NULL, 'image_paths/r012.jpg', 10, 2),
-  ('R013', '豚の生姜焼き', NULL, 'image_paths/r013.jpg', 15, 2),
-  ('R014', 'クリームシチュー', NULL, 'image_paths/r014.jpg', 40, 4),
-  ('R015', '白菜と豚バラの重ね蒸し', NULL, 'image_paths/r015.jpg', 20, 2);
+INSERT INTO recipes (recipe_id, recipe_name, image_path) VALUES
+  ('R001', '肉じゃが', 'image_paths/r001.jpg'),
+  ('R002', 'カレーライス', 'image_paths/r002.jpg'),
+  ('R003', '野菜炒め', 'image_paths/r003.jpg'),
+  ('R004', '親子丼', 'image_paths/r004.jpg'),
+  ('R005', '麻婆なす', 'image_paths/r005.jpg'),
+  ('R006', 'ハンバーグ', 'image_paths/r006.jpg'),
+  ('R007', '豚汁', 'image_paths/r007.jpg'),
+  ('R008', 'ナポリタン', 'image_paths/r008.jpg'),
+  ('R009', '鮭のホイル焼き', 'image_paths/r009.jpg'),
+  ('R010', 'オムライス', 'image_paths/r010.jpg'),
+  ('R011', 'ポテトサラダ', 'image_paths/r011.jpg'),
+  ('R012', 'ほうれん草とベーコンのソテー', 'image_paths/r012.jpg'),
+  ('R013', '豚の生姜焼き', 'image_paths/r013.jpg'),
+  ('R014', 'クリームシチュー', 'image_paths/r014.jpg'),
+  ('R015', '白菜と豚バラの重ね蒸し', 'image_paths/r015.jpg');
 
 -- レシピ材料（79件）
 INSERT INTO materials (recipe_id, recipe_food_id, amount, food_name) VALUES

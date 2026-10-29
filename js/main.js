@@ -279,9 +279,6 @@ async function showDetail(recipeId) {
   img.src = recipe.image_path || NO_IMAGE;
   img.alt = recipe.recipe_name;
 
-  document.getElementById("detailTime").textContent = recipe.cook_time ? recipe.cook_time + "分" : "−";
-  document.getElementById("detailServings").textContent = recipe.servings ? "（" + recipe.servings + "人分）" : "";
-  document.getElementById("detailDescription").textContent = recipe.description || "";
 
   // 材料（ある食材は○、ない食材は×で赤字）
   const ul = document.getElementById("detailFoods");
