@@ -418,3 +418,93 @@ button:disabled {
   font-size: 20px;
   color: var(--main);
 }
+
+/* ==========================================================
+   PC・タブレット（画面幅768px以上、高さ620px以上）
+   画面全体はスクロールさせず、ウィンドウの高さにぴったり合わせる。
+   中身が多い時は、各ボックスの中だけでスクロールバーを出す。
+   ※ 高さが足りない画面（横向きのスマートフォンなど）では、
+     ボックスが小さくなりすぎるので、この設定は使わない
+   ========================================================== */
+@media (min-width: 768px) and (min-height: 620px) {
+
+  /* 画面全体：ヘッダー＋本体で、ウィンドウの高さちょうど */
+  body {
+    height: 100vh;
+    height: 100dvh;          /* スマートフォン・タブレットのアドレスバー分も考える */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;        /* 画面全体はスクロールしない */
+  }
+
+  .header {
+    flex-shrink: 0;
+  }
+
+  /* 本体：残りの高さをすべて使う */
+  .main {
+    flex: 1;
+    min-height: 0;           /* これがないと、中身に合わせて伸びてしまう */
+    width: 100%;
+    grid-template-rows: 100%;
+    /* 左右を必ず半分ずつにする（中身の長さで片方が広がらないように） */
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  /* ---- 左側：カート内商品（上）とカート外・対象外（下） ---- */
+  .food-column {
+    min-height: 0;
+  }
+
+  .area-cart {
+    flex: 1.2;
+  }
+
+  .food-row {
+    flex: 1;
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .food-area {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  /* 一覧：ボックスの残りの高さを使い、あふれたらスクロール */
+  .food-list {
+    flex: 1;
+    min-height: 60px;
+    max-height: none;
+    overflow-y: auto;
+  }
+
+  /* ---- 右側：レシピ一覧 ---- */
+  .recipe-area {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .recipe-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  /* スクロールしても表の見出し（No.・画像…）は上に残す */
+  .recipe-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  /* ---- レシピ詳細画面：詳細の枠の中だけスクロール ---- */
+  .detail {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    overflow-y: auto;
+  }
+}

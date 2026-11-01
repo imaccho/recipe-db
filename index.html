@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>献立提案カート</title>
   <!-- ?v=番号 ：ファイルを直したら番号を変える。ブラウザが古いファイルを使い続けるのを防ぐ -->
-  <link rel="stylesheet" href="css/style.css?v=3.5">
+  <link rel="stylesheet" href="css/style.css?v=3.6">
 </head>
 <body>
 
@@ -68,6 +68,8 @@
         <button id="searchBtn" type="button" class="search-btn">レシピを探す</button>
       </div>
       <p id="message" class="message">食材を追加して「レシピを探す」を押してください。</p>
+      <!-- PC・タブレットでは、この枠の中だけがスクロールする -->
+      <div class="recipe-scroll">
       <table id="recipeTable" class="recipe-table">
         <thead>
           <tr>
@@ -79,6 +81,7 @@
         </thead>
         <tbody id="recipeBody"></tbody>
       </table>
+      </div>
       <p class="hint">※レシピをダブルクリックで詳細を表示</p>
     </section>
 
@@ -101,6 +104,6 @@
   </section>
 
   <!-- データは api フォルダのPHPからデータベースを読んで受け取る -->
-  <script src="js/main.js?v=3.5"></script>
+  <script src="js/main.js?v=3.6"></script>
 </body>
 </html>
