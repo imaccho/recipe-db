@@ -79,10 +79,12 @@ select {
 /* ---------- メイン画面のレイアウト ---------- */
 .main {
   display: grid;
-  grid-template-columns: 1fr 1fr;   /* 左：食材、右：レシピ */
+  /* 3列：左＝カート内商品、真ん中＝カート外・対象外、右＝レシピ一覧
+     minmax(0, …) は、中身の長さで列が広がらないようにするため */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr) minmax(0, 1.4fr);
   gap: 16px;
   padding: 16px;
-  max-width: 1200px;
+  max-width: 1440px;
   margin: 0 auto;
 }
 
@@ -92,11 +94,6 @@ select {
   gap: 16px;
 }
 
-.food-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;   /* カート外・対象外を横に並べる */
-  gap: 16px;
-}
 
 /* ---------- 食材エリア ---------- */
 .food-area,
@@ -341,8 +338,7 @@ select {
 
 /* ---------- スマートフォン（画面幅767px以下） ---------- */
 @media (max-width: 767px) {
-  .main,
-  .food-row {
+  .main {
     grid-template-columns: 1fr;   /* すべて縦1列 */
   }
 
@@ -447,23 +443,16 @@ button:disabled {
     min-height: 0;           /* これがないと、中身に合わせて伸びてしまう */
     width: 100%;
     grid-template-rows: 100%;
-    /* 左右を必ず半分ずつにする（中身の長さで片方が広がらないように） */
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 
-  /* ---- 左側：カート内商品（上）とカート外・対象外（下） ---- */
+  /* ---- 真ん中の列：カート外食材（上）と対象外食材（下）を半分ずつ ---- */
   .food-column {
     min-height: 0;
   }
 
-  .area-cart {
-    flex: 1.2;
-  }
-
-  .food-row {
+  .area-home,
+  .area-exclude {
     flex: 1;
-    min-height: 0;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 
   .food-area {
@@ -506,5 +495,57 @@ button:disabled {
     min-height: 0;
     width: 100%;
     overflow-y: auto;
+  }
+}
+
+/* ==========================================================
+   タブレット縦向きなど、幅が狭い画面（768px〜1023px）
+   3列だと1列が細くなるので、文字や画像を少し小さくする
+   ========================================================== */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .main {
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .food-area,
+  .recipe-area {
+    padding: 10px;
+  }
+
+  /* 真ん中の列：ドロップダウンと追加ボタンを上下に並べる */
+  .food-column .input-row {
+    flex-direction: column;
+  }
+
+  .food-column .input-row button {
+    width: 100%;
+  }
+
+  /* カート：商品名の下に「単価 × 数量」を出す */
+  .cart-list li {
+    flex-wrap: wrap;
+  }
+
+  .cart-name {
+    flex: 1 1 100%;
+  }
+
+  .cart-detail {
+    flex: 1;
+  }
+
+  /* レシピ一覧：画像を小さく */
+  .col-img   { width: 64px; }
+  .list-image {
+    width: 56px;
+    height: 42px;
+  }
+
+  .col-match { width: auto; }
+
+  .recipe-head {
+    flex-wrap: wrap;
+    gap: 6px;
   }
 }

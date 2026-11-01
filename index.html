@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>献立提案カート</title>
   <!-- ?v=番号 ：ファイルを直したら番号を変える。ブラウザが古いファイルを使い続けるのを防ぐ -->
-  <link rel="stylesheet" href="css/style.css?v=3.6">
+  <link rel="stylesheet" href="css/style.css?v=3.7">
 </head>
 <body>
 
@@ -18,50 +18,48 @@
   <!-- ==================== G-01 メイン画面 ==================== -->
   <main id="mainScreen" class="main">
 
-    <!-- 左側：食材エリア -->
+    <!-- 左列：カート内商品 -->
+    <section class="food-area area-cart">
+      <h2>カート内商品</h2>
+      <div class="input-row">
+        <select id="cartSelect"></select>
+        <button id="cartAddBtn" type="button">追加</button>
+      </div>
+      <ul id="cartList" class="food-list cart-list"></ul>
+      <div class="cart-total">
+        <span>合計 <span id="cartCount">0</span>点</span>
+        <span id="cartTotal" class="cart-total-amount">0円</span>
+      </div>
+      <p class="hint">※同じ商品を追加すると数量が増えます。ダブルクリックで削除</p>
+    </section>
+
+    <!-- 真ん中の列：上＝カート外食材（家にある食材）、下＝対象外食材 -->
     <div class="food-column">
 
-      <!-- カート内商品 -->
-      <section class="food-area area-cart">
-        <h2>カート内商品</h2>
+      <!-- カート外食材（家にある食材） -->
+      <section class="food-area area-home">
+        <h2>カート外食材<span class="sub">（家にある食材）</span></h2>
         <div class="input-row">
-          <select id="cartSelect"></select>
-          <button id="cartAddBtn" type="button">追加</button>
+          <select id="homeSelect"></select>
+          <button id="homeAddBtn" type="button">追加</button>
         </div>
-        <ul id="cartList" class="food-list cart-list"></ul>
-        <div class="cart-total">
-          <span>合計 <span id="cartCount">0</span>点</span>
-          <span id="cartTotal" class="cart-total-amount">0円</span>
-        </div>
-        <p class="hint">※同じ商品を追加すると数量が増えます。ダブルクリックで削除</p>
+        <ul id="homeList" class="food-list"></ul>
+        <p class="hint">※ダブルクリックで削除</p>
       </section>
 
-      <div class="food-row">
-        <!-- カート外食材（家にある食材） -->
-        <section class="food-area area-home">
-          <h2>カート外食材<span class="sub">（家にある食材）</span></h2>
-          <div class="input-row">
-            <select id="homeSelect"></select>
-            <button id="homeAddBtn" type="button">追加</button>
-          </div>
-          <ul id="homeList" class="food-list"></ul>
-          <p class="hint">※ダブルクリックで削除</p>
-        </section>
-
-        <!-- 対象外食材 -->
-        <section class="food-area area-exclude">
-          <h2>対象外食材</h2>
-          <div class="input-row">
-            <select id="excludeSelect"></select>
-            <button id="excludeAddBtn" type="button">追加</button>
-          </div>
-          <ul id="excludeList" class="food-list"></ul>
-          <p class="hint">※ダブルクリックで削除</p>
-        </section>
-      </div>
+      <!-- 対象外食材 -->
+      <section class="food-area area-exclude">
+        <h2>対象外食材</h2>
+        <div class="input-row">
+          <select id="excludeSelect"></select>
+          <button id="excludeAddBtn" type="button">追加</button>
+        </div>
+        <ul id="excludeList" class="food-list"></ul>
+        <p class="hint">※ダブルクリックで削除</p>
+      </section>
     </div>
 
-    <!-- 右側：レシピ一覧 -->
+    <!-- 右列：レシピ一覧 -->
     <section class="recipe-area">
       <div class="recipe-head">
         <h2>レシピ一覧</h2>
@@ -104,6 +102,6 @@
   </section>
 
   <!-- データは api フォルダのPHPからデータベースを読んで受け取る -->
-  <script src="js/main.js?v=3.6"></script>
+  <script src="js/main.js?v=3.7"></script>
 </body>
 </html>
