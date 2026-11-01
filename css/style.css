@@ -1,6 +1,21 @@
 /* ==========================================================
-   レシピ検索システム スタイルシート
+   献立提案カート スタイルシート
    ========================================================== */
+
+/* ---------- 色の設定（ここを変えると全体の色が変わる） ----------
+   メインカラーはイオン風のマゼンタ */
+:root {
+  --main:        #b60081;   /* メインカラー（マゼンタ） */
+  --main-dark:   #8c0063;   /* ボタンを押す時など、少し濃い色 */
+  --main-light:  #fbe9f4;   /* 背景に使う、ごく薄い色 */
+  --main-pale:   #f5d3e7;   /* 表の見出しなどに使う、薄い色 */
+  --home:        #6a3d9a;   /* カート外食材（家にある食材）の色：紫 */
+  --exclude:     #8a8a8a;   /* 対象外食材の色：グレー */
+  --have:        #2e8b57;   /* 持っている材料（○）の色：緑 */
+  --lack:        #d32f2f;   /* 足りない材料（×）の色：赤 */
+  --text:        #333333;
+  --bg:          #f6f3f6;   /* 画面の背景 */
+}
 
 /* ---------- 全体 ---------- */
 * {
@@ -10,8 +25,8 @@
 body {
   margin: 0;
   font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
-  color: #333;
-  background-color: #f7f5f0;
+  color: var(--text);
+  background-color: var(--bg);
   line-height: 1.6;
 }
 
@@ -45,12 +60,20 @@ select {
 /* ---------- ヘッダー ---------- */
 .header {
   padding: 12px 16px;
-  background-color: #e8743b;
+  background-color: var(--main);
   color: #fff;
+  border-bottom: 4px solid var(--main-dark);
 }
 
 .header h1 {
   font-size: 22px;
+  letter-spacing: 0.05em;
+}
+
+.header-sub {
+  margin: 2px 0 0;
+  font-size: 13px;
+  opacity: 0.9;
 }
 
 /* ---------- メイン画面のレイアウト ---------- */
@@ -96,14 +119,18 @@ select {
 }
 
 /* エリアごとの色分け */
-.area-cart    { border-top-color: #3a9a5b; }   /* 緑 */
-.area-home    { border-top-color: #3a78c2; }   /* 青 */
-.area-exclude { border-top-color: #888;    }   /* グレー */
-.recipe-area  { border-top-color: #e8743b; }   /* オレンジ */
+.area-cart    { border-top-color: var(--main); }      /* マゼンタ */
+.area-home    { border-top-color: var(--home); }      /* 紫 */
+.area-exclude { border-top-color: var(--exclude); }   /* グレー */
+.recipe-area  { border-top-color: var(--main); }      /* マゼンタ */
 
-.area-cart    button { background-color: #3a9a5b; color: #fff; }
-.area-home    button { background-color: #3a78c2; color: #fff; }
-.area-exclude button { background-color: #777;    color: #fff; }
+.area-cart    button { background-color: var(--main); color: #fff; }
+.area-home    button { background-color: var(--home); color: #fff; }
+.area-exclude button { background-color: var(--exclude); color: #fff; }
+
+.area-cart button:hover    { background-color: var(--main-dark); }
+.area-home button:hover    { background-color: #52297a; }
+.area-exclude button:hover { background-color: #6f6f6f; }
 
 .input-row {
   display: flex;
@@ -136,7 +163,7 @@ select {
 }
 
 .food-list li:hover {
-  background-color: #fff3e0;
+  background-color: var(--main-light);
 }
 
 .hint {
@@ -158,19 +185,19 @@ select {
 }
 
 .search-btn {
-  background-color: #e8743b;
+  background-color: var(--main);
   color: #fff;
   font-weight: bold;
 }
 
 .search-btn:hover {
-  background-color: #d0612a;
+  background-color: var(--main-dark);
 }
 
 .message {
   margin: 0 0 8px;
   padding: 8px;
-  background-color: #fff8e1;
+  background-color: var(--main-light);
   border-radius: 6px;
   font-size: 14px;
 }
@@ -182,7 +209,7 @@ select {
 
 .recipe-table th {
   padding: 6px;
-  background-color: #f2e6dc;
+  background-color: var(--main-pale);
   font-size: 14px;
   text-align: left;
 }
@@ -200,7 +227,7 @@ select {
 }
 
 .recipe-table tbody tr:hover {
-  background-color: #fff3e0;
+  background-color: var(--main-light);
 }
 
 .col-no    { width: 40px; text-align: center; }
@@ -242,7 +269,7 @@ select {
 .detail h3 {
   margin: 20px 0 8px;
   padding-left: 8px;
-  border-left: 5px solid #e8743b;
+  border-left: 5px solid var(--main);
   font-size: 18px;
 }
 
@@ -289,12 +316,12 @@ select {
 }
 
 .have .mark {
-  color: #3a9a5b;
+  color: var(--have);
 }
 
 /* 不足食材は赤字 */
 .lack {
-  color: #d32f2f;
+  color: var(--lack);
 }
 
 .seasonings {
@@ -382,12 +409,12 @@ button:disabled {
   align-items: baseline;
   margin-top: 8px;
   padding: 8px 12px;
-  background-color: #eef7f0;
+  background-color: var(--main-light);
   border-radius: 6px;
   font-weight: bold;
 }
 
 .cart-total-amount {
   font-size: 20px;
-  color: #3a9a5b;
+  color: var(--main);
 }
