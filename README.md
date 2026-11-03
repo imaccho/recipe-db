@@ -53,7 +53,8 @@ recipe-search/
 │   ├── get_products.php  商品一覧
 │   ├── get_foods.php     食材一覧（レシピの材料から重複なしで取得）
 │   ├── search_recipes.php レシピ検索
-│   └── get_recipe.php    レシピ詳細
+│   ├── get_recipe.php    レシピ詳細
+│   └── get_recipes.php   レシピ一覧（確認用）
 ├── config.sample.php     接続設定の見本
 ├── image_paths/          レシピ画像（r001.jpg〜r015.jpg、noimage.png）
 ├── sql/                  テスト用DB
